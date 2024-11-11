@@ -1,13 +1,11 @@
 ﻿using ParallelAndDistributedSystems_SectionA;
 using System.Diagnostics;
 
-Console.WriteLine("Hello, World!");
-
 // Basic generator for random int values in an array, added as a separate class to keep the main clean
-var generator = new RandomGenerator(0, 600);
+var generator = new RandomGenerator(0, 100_000);
 
-const int elements = 100000;
-const int maxThreads = 2;
+const int elements = 10_000;
+const int maxThreads = 16;
 
 
 var unsortedArray = generator.Generate(elements);
@@ -26,11 +24,6 @@ Console.ReadLine();
 // 16 (PC max) -  0,1688517
 async Task ParallelBubbleSort(int[] arr, int maxThreads)
 {
-
-    // PLAN:
-    // - merge all chunks when all tasks are done
-
-    // TODO: discuss if splitting the array still counts as bubble sort and not bucket sort
     var watch = new Stopwatch();
     int chunkSize = arr.Length / maxThreads;
 
@@ -48,24 +41,75 @@ async Task ParallelBubbleSort(int[] arr, int maxThreads)
     }
 
     await Task.WhenAll(tasks);
-    watch.Stop();
+    
 
+    // Use the max threads since each thread creates 1 chunk
+    for (int i = 1; i < maxThreads; i++)
+    {
+        var start = 0;
+        var middle = i * chunkSize;
+        var end = middle + chunkSize < arr.Length ? middle + chunkSize : arr.Length;
+
+        InPlaceMerge(arr, start, middle, end);
+    }
+
+    watch.Stop();
     Console.WriteLine($"Finished execution with time '{watch.Elapsed.TotalSeconds}' seconds");
 
+    // For basic debugging
+    //for (int i = 0; i < arr.Length - 1; i++)
+    //{
+    //    if (arr[i] > arr[i + 1])
+    //    {
+    //        Console.WriteLine($"UNSORTED AT INDEX {i} - value {arr[i]} > {arr[i + 1]}");
+    //    }
+    //}
 
-}
-
-void BubbleSort(int[] arr, int start, int end)
-{
-    for (int i = start; i < end; i++)
+    // Basic in-place merge
+    // Intentionally not using temporary array and cloning due to slightly better performance because of smaller sizes
+    // In case of a bigger array (e.g.
+    void InPlaceMerge(int[] array, int start, int middle, int end)
     {
-        for (int j = start; j < end - (i - start); j++)
+        var i = start;
+        var j = middle;
+        while (i < j && j < end)
         {
-            if (arr[j] > arr[j + 1])
+            if (array[i] <= array[j])
             {
-                int temp = arr[j];
-                arr[j] = arr[j + 1];
-                arr[j + 1] = temp;
+                i++;
+            }
+            else
+            {
+                int value = array[j];
+                int index = j;
+
+                while (index != i)
+                {
+                    array[index] = array[index - 1];
+                    index--;
+                }
+                array[i] = value;
+
+                i++;
+                j++;
+                middle++;
+            }
+        }
+    }
+
+    // Basic bubble sort
+    void BubbleSort(int[] arr, int start, int end)
+    {
+        for (int i = start; i < end; i++)
+        {
+            for (int j = start; j < end - (i - start); j++)
+            {
+                if (arr[j] > arr[j + 1])
+                {
+                    int temp = arr[j];
+                    arr[j] = arr[j + 1];
+                    arr[j + 1] = temp;
+                }
             }
         }
     }
