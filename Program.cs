@@ -11,10 +11,10 @@ const int maxThreads = 6;
 //var unsortedArray = generator.Generate(elements);
 //await ParallelBubbleSort(unsortedArray, maxThreads);
 
-// Uncomment to test Task 2 (Finding tools)
-var toolGenerator = new RandomToolGenerator();
-var toolsList = toolGenerator.Generate(elements);
-await FindTools(toolsList, maxThreads);
+//// Uncomment to test Task 2 (Finding tools)
+//var toolGenerator = new RandomToolGenerator();
+//var toolsList = toolGenerator.Generate(elements);
+//await FindTools(toolsList, maxThreads);
 
 Console.ReadLine();
 
@@ -62,7 +62,6 @@ async Task ParallelBubbleSort(int[] arr, int maxThreads)
 
     // Basic in-place merge
     // Intentionally not using temporary array and cloning due to slightly better performance because of smaller sizes
-    // In case of a bigger array (e.g.
     void InPlaceMerge(int[] array, int start, int middle, int end)
     {
         var i = start;
