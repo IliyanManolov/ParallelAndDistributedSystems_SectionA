@@ -12,9 +12,10 @@ Thread count : Execution time in seconds using [s,fffffff] format
 
 
 ## Task 2 Results
-| Threads count | Execution time in seconds [s,fffffff] |
-|				|							|
-| 2	| ... |
-| 3	| ... |
-| 4	| ... |
-| 6 | ... |
+
+Thread count : Execution time in seconds using [s,fffffff] format
+
+- 2 : 0,0024175
+- 3 : 0,0024305
+- 4 : 0,0023834
+- 6 : 0,0025217

@@ -6,15 +6,15 @@ using System.Diagnostics;
 const int elements = 100_000;
 const int maxThreads = 6;
 
-// Uncomment to test Task 1 (Parralel bubble sort)
-var generator = new RandomGenerator(0, 100_000);
-var unsortedArray = generator.Generate(elements);
-await ParallelBubbleSort(unsortedArray, maxThreads);
+//// Uncomment to test Task 1 (Parralel bubble sort)
+//var generator = new RandomGenerator(0, 100_000);
+//var unsortedArray = generator.Generate(elements);
+//await ParallelBubbleSort(unsortedArray, maxThreads);
 
-//// Uncomment to test Task 2 (Finding tools)
-//var toolGenerator = new RandomToolGenerator();
-//var toolsList = toolGenerator.Generate(elements);
-//await FindTools(toolsList, maxThreads);
+// Uncomment to test Task 2 (Finding tools)
+var toolGenerator = new RandomToolGenerator();
+var toolsList = toolGenerator.Generate(elements);
+await FindTools(toolsList, maxThreads);
 
 Console.ReadLine();
 
@@ -113,7 +113,7 @@ async Task ParallelBubbleSort(int[] arr, int maxThreads)
 async Task FindTools(IList<Tool> tools, int maxThreads)
 {
     var watch = new Stopwatch();
-    int chunkSize = tools.Count / maxThreads;
+    int chunkSize = (int)Math.Ceiling((double)tools.Count / maxThreads);
 
     var tasks = new List<Task>();
     bool allToolsFound = false;
@@ -140,18 +140,19 @@ async Task FindTools(IList<Tool> tools, int maxThreads)
     {
         int currentStart = i * chunkSize;
 
-        int currentLimit = (i == maxThreads - 1) ? tools.Count - 1 : (currentStart + chunkSize - 1);
+        var currentLimit = Math.Min(currentStart + chunkSize - 1, tools.Count - 1);
 
         tasks.Add(Task.Run(() => SearchChunk(tools, currentStart, currentLimit)));
     }
 
     await Task.WhenAll(tasks);
+
     watch.Stop();
     Console.WriteLine($"Finished execution with time '{watch.Elapsed.TotalSeconds}' seconds");
 
     foreach (var (type, barcodes) in resultDict)
     {
-        Console.WriteLine($"Found '{barcodes.Count}' tools with type {type} - barcodes csv {string.Join(',', barcodes)}");
+        Console.WriteLine($"Found '{barcodes.Count}' tools with type '{type}' - barcodes csv '{string.Join(',', barcodes)}'");
     }
 
     void SearchChunk(IList<Tool> tools, int start, int end)
@@ -165,10 +166,12 @@ async Task FindTools(IList<Tool> tools, int maxThreads)
             
             if (neededTools.TryGetValue(currentTool.Type, out var neededCount))
             {
+                // Lock the results dict when adding the current tool
                 lock (resultDict)
                 {
                     var currentBarcodes = resultDict[currentTool.Type];
 
+                    // Check the count of tools found in case it was reached between the previous and current lock
                     if (currentBarcodes.Count != neededCount)
                         currentBarcodes.Add(currentTool.Barcode);
                 }
@@ -178,6 +181,7 @@ async Task FindTools(IList<Tool> tools, int maxThreads)
 
     bool AreAllToolsFound()
     {
+        // Lock the results dict when checking
         lock(resultDict)
         {
             if (allToolsFound)
