@@ -105,7 +105,9 @@ async Task ParallelBubbleSort(int[] arr, int maxThreads)
     }
 
     watch.Stop();
+    WriteSeparator();
     Console.WriteLine($"Finished execution with time '{watch.Elapsed.TotalSeconds}' seconds");
+    WriteSeparator();
 
     // For basic debugging
     for (int i = 0; i < arr.Length - 1; i++)
@@ -203,7 +205,9 @@ async Task FindTools(IList<Tool> tools, int maxThreads)
     await Task.WhenAll(tasks);
 
     watch.Stop();
+    WriteSeparator();
     Console.WriteLine($"Finished execution with time '{watch.Elapsed.TotalSeconds}' seconds");
+    WriteSeparator();
 
     foreach (var (type, barcodes) in resultDict)
     {
@@ -223,7 +227,7 @@ async Task FindTools(IList<Tool> tools, int maxThreads)
             //Console.WriteLine($"Worker {Thread.CurrentThread.ManagedThreadId} is searching for a tool");
 
             // Add a sleep to show that the execution is parallel
-            Thread.Sleep(TimeSpan.FromMilliseconds(200));
+            Thread.Sleep(TimeSpan.FromMilliseconds(10));
 
             var currentTool = tools[i];
             //Console.WriteLine($"Worker {Thread.CurrentThread.ManagedThreadId} found a tool");

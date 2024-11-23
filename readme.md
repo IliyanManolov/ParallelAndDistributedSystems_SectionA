@@ -1,13 +1,14 @@
 ﻿
 ## Program structure
 
-The program includes 2 commented out scenarios for testing both tasks as well as commented out debug statements within the tasks themselves. 
+The program includes a continious menu for selecting the task, number of tasks and elements for testing.
 In order to ease testing I have created 2 random generator classes - one for an array of `int` and one for a List of `Tool`.
 Both tasks utilise local functions for auxiliary functions.
 The `Tool` class for Task 2 has 2 properties - `Type` (int between 1 and 100) and `Barcode` (int - sequential coresponding to its location in the list, used to validate that no item tool has been selected twice)
 
 
-Both tasks' execution times were tested with arrays of 100 000 elements as per the requirements listed in the Module book
+Both tasks' execution times were tested with arrays of 100 000 elements as per the requirements listed in the Module book.
+Additionally each execution was tested on a fresh project build in order for caching & optimisations to not sway the results
 
 ## Task 1 Results
 
@@ -37,12 +38,15 @@ Thread count : Execution time in seconds using [s,fffffff] format
 
 ## Task 2 Results
 
+Task 2 was tested with a 10 millisecond delay to make the difference in threads more visible.
+Otherwise the difference between execution times is less than 0.02 seconds
+
 Thread count : Execution time in seconds using [s,fffffff] format
 
-- 2 : 0,0024175
-- 3 : 0,0024305
-- 4 : 0,0023834
-- 6 : 0,0025217
+- 2 : 23,1946333
+- 3 : 15,162791
+- 4 : 12,6608827
+- 6 : 8,4365885
 
 
 ## Task 2 Evalution:
