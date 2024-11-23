@@ -6,6 +6,10 @@ var validTasks = new HashSet<int>() { 1, 2 };
 
 while (true)
 {
+    WriteSeparator();
+    Console.WriteLine("Task 2 has additional messages to the console that are commented out to keep it visually easier to follow.");
+    WriteSeparator();
+
     Console.WriteLine("Please input which task you want to test.");
     Console.WriteLine("Task 1: Parallel bubble sort");
     Console.WriteLine("Task 2: Finding tools in parallel");
@@ -69,19 +73,6 @@ void WriteSeparator()
 {
     Console.WriteLine("===============================================================");
 }
-//const int elements = 100_000;
-//const int maxThreads = 6;
-
-//// Uncomment to test Task 1 (Parralel bubble sort)
-//var generator = new RandomGenerator(0, 100_000);
-//var unsortedArray = generator.Generate(elements);
-//await ParallelBubbleSort(unsortedArray, maxThreads);
-
-//// Uncomment to test Task 2 (Finding tools)
-//var toolGenerator = new RandomToolGenerator();
-//var toolsList = toolGenerator.Generate(elements);
-//await FindTools(toolsList, maxThreads);
-
 
 async Task ParallelBubbleSort(int[] arr, int maxThreads)
 {
@@ -216,7 +207,8 @@ async Task FindTools(IList<Tool> tools, int maxThreads)
 
     foreach (var (type, barcodes) in resultDict)
     {
-        Console.WriteLine(barcodes.Count == neededTools[type] ? "SUCCESS. " : "INSUFFICIENT TOOLS FOUND. " 
+        Console.WriteLine(
+            (barcodes.Count == neededTools[type] ? "SUCCESS. " : "INSUFFICIENT TOOLS FOUND. ") 
             + $"Found '{barcodes.Count}' tools with type '{type}' - barcodes csv '{string.Join(',', barcodes)}'");
     }
 
@@ -228,8 +220,14 @@ async Task FindTools(IList<Tool> tools, int maxThreads)
             if (AreAllToolsFound())
                 break;
 
+            //Console.WriteLine($"Worker {Thread.CurrentThread.ManagedThreadId} is searching for a tool");
+
+            // Add a sleep to show that the execution is parallel
+            Thread.Sleep(TimeSpan.FromMilliseconds(200));
+
             var currentTool = tools[i];
-            
+            //Console.WriteLine($"Worker {Thread.CurrentThread.ManagedThreadId} found a tool");
+
             if (neededTools.TryGetValue(currentTool.Type, out var neededCount))
             {
                 // Lock the results dict when adding the current tool
@@ -239,8 +237,15 @@ async Task FindTools(IList<Tool> tools, int maxThreads)
 
                     // Check the count of tools found in case it was reached between the previous and current lock
                     if (currentBarcodes.Count != neededCount)
+                    {
+                        //Console.WriteLine($"Worker {Thread.CurrentThread.ManagedThreadId} added a tool of type '{currentTool.Type}' and barcode '{currentTool.Barcode}'");
                         currentBarcodes.Add(currentTool.Barcode);
+                    }
                 }
+            }
+            else
+            {
+                //Console.WriteLine($"Worker {Thread.CurrentThread.ManagedThreadId} found a tool of type '{currentTool.Type}' that is not needed....");
             }
         }
     }
