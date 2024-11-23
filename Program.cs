@@ -2,9 +2,75 @@
 using System.Diagnostics;
 
 // Basic generator for random int values in an array, added as a separate class to keep the main clean
+var validTasks = new HashSet<int>() { 1, 2 };
 
-const int elements = 100_000;
-const int maxThreads = 6;
+while (true)
+{
+    Console.WriteLine("Please input which task you want to test.");
+    Console.WriteLine("Task 1: Parallel bubble sort");
+    Console.WriteLine("Task 2: Finding tools in parallel");
+    Console.Write("Selected: ");
+    
+    var taskSelectionStr = Console.ReadLine();
+
+    if (!int.TryParse(taskSelectionStr, out var taskSelected) || !validTasks.Contains(taskSelected))
+    {
+        Console.Clear();
+        WriteSeparator();
+        Console.WriteLine("Please selected a valid task to test.");
+        WriteSeparator();
+        continue;
+    }
+
+    Console.Write("Input number of threads you would like to use: ");
+
+    var threadsStr = Console.ReadLine();
+
+    if (!int.TryParse(threadsStr, out var threads) || threads <= 0)
+    {
+        Console.Clear();
+        Console.WriteLine("Please input a valid number of threads > 0");
+        continue;
+    }
+
+    Console.Write("Input number of elements you would like to use: ");
+
+    var elementsStr = Console.ReadLine();
+
+    if (!int.TryParse(elementsStr, out var elements) || elements <= 0)
+    {
+        Console.Clear();
+        WriteSeparator();
+        Console.WriteLine("Please input a valid number of elements > 0");
+        WriteSeparator();
+        continue;
+    }
+
+    switch (taskSelected)
+    {
+        case 1:
+            var generator = new RandomGenerator(0, 100_000);
+            var unsortedArray = generator.Generate(elements);
+            await ParallelBubbleSort(unsortedArray, threads);
+            WriteSeparator();
+            break;
+
+        case 2:
+            var toolGenerator = new RandomToolGenerator();
+            var toolsList = toolGenerator.Generate(elements);
+            await FindTools(toolsList, threads);
+            WriteSeparator();
+            break;
+    }
+
+}
+
+void WriteSeparator()
+{
+    Console.WriteLine("===============================================================");
+}
+//const int elements = 100_000;
+//const int maxThreads = 6;
 
 //// Uncomment to test Task 1 (Parralel bubble sort)
 //var generator = new RandomGenerator(0, 100_000);
@@ -16,7 +82,6 @@ const int maxThreads = 6;
 //var toolsList = toolGenerator.Generate(elements);
 //await FindTools(toolsList, maxThreads);
 
-Console.ReadLine();
 
 async Task ParallelBubbleSort(int[] arr, int maxThreads)
 {
@@ -151,13 +216,15 @@ async Task FindTools(IList<Tool> tools, int maxThreads)
 
     foreach (var (type, barcodes) in resultDict)
     {
-        Console.WriteLine($"Found '{barcodes.Count}' tools with type '{type}' - barcodes csv '{string.Join(',', barcodes)}'");
+        Console.WriteLine(barcodes.Count == neededTools[type] ? "SUCCESS. " : "INSUFFICIENT TOOLS FOUND. " 
+            + $"Found '{barcodes.Count}' tools with type '{type}' - barcodes csv '{string.Join(',', barcodes)}'");
     }
 
     void SearchChunk(IList<Tool> tools, int start, int end)
     {
         for (int i = start; i < end; i++)
         {
+            // First lock before grabbing a tool
             if (AreAllToolsFound())
                 break;
 
